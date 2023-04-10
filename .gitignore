@@ -54,3 +54,6 @@ dkms.conf
 
 # Automatically generated Makefile sources
 *.mk
+
+# IDE files
+*.vscode
