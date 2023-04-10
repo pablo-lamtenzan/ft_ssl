@@ -1,16 +1,24 @@
 
 #include <ssl_engine.h>
+#include <ssl_utils.h>
 
 __always_inline
 static void display_usage()
 {
-	fprintf(stdout, "USAGE: " __progname " <algorithm> [ ... ]\n");
+	fprintf(stdout, "usage: " __progname " command [flags] [file/string]\n");
 }
 
 __always_inline
-static void	display_usage_digest()
+static void display_commands()
 {
-	fprintf(stdout, "USAGE: " __progname " <digest> [ -pqr ] [ -s <string> ] [ file1[, file2[, ...] ] ]\n");
+	fprintf(stdout, "\nCommands:\n");
+	for (u64 i = 0 ; i < ARRLEN(commands) ; i++)
+		fprintf(stdout, "%s\n", commands[i].name);
+
+	fprintf(stdout, "\nFlags:\n");
+	for (u64 i = 0 ; i < ARRLEN(opts_str) ; i++)
+		fprintf(stdout, "%s ", opts_str[i]);
+	fprintf(stdout, "\n");
 }
 
 u8	chunk_buffer[CHUNK_LEN_MAX];
@@ -29,32 +37,10 @@ int main(int ac, const char* av[])
 
 	++av;
 
-	if ((st = select_command(&av, &cmd)) != SUCCESS)
-		goto end;
-
-	if (ac == 2)
-	{
-		///TODO: This is not polymorphic and maybe is valid ...
-		/// I think this is invalid (e.g. just read from stdin is valid ...)
-
-		display_usage_digest();
-		st = E_UNKOWNARGUMENT;
-		goto end;
-	}
-
-	///TODO: For testing purpose, better if i can only use polymorphism in the main
-	digest_parse_t pg = {0};
-
-	if ((st = cmd->parse(&av, &pg)) != SUCCESS)
-		goto end;
-
-	if (pg.opts & O_DISPLAY_HELP)
-	{
-		display_usage_digest();
-		goto end;
-	}
-
-	printf("DEBUG: OPTS: [%d] | STR: %s\n", pg.opts, pg.input_str);
+	if ((st = select_command(&av, &cmd)) == SUCCESS)
+		cmd->run(cmd, &av);
+	else if (st == E_UNKOWNARGUMENT)
+		display_commands();
 
 end:
 	return st;

@@ -10,6 +10,7 @@
 typedef enum
 {
 	SUCCESS,
+	E_UNAVALAIBLE,
 	E_SYSCALL,
 	E_UNKOWNARGUMENT,
 	E_FILENOTFOUND,
@@ -27,6 +28,7 @@ typedef enum
 		name, strerror(errno), errno \
 	)
 
-#define EFMT_CMDNOTFOUND PFX_ERROR "no such algorithm '%s'.\n"
+#define EFMT_CMDNOTFOUND PFX_ERROR "'%s' is an invalid command.\n"
 #define EFMT_OPTARGNULL PFX_ERROR "option '%s': missing arguments.\n"
 #define EFMT_OPTNOTFOUND PFX_ERROR "no such option '%s'.\n"
+#define EFMT_FILENOTFOUND PFX_ERROR "%s: %s: No such file or directory.\n"

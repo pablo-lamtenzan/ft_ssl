@@ -6,14 +6,6 @@
 
 err_t	parse_digest_cli(const char** av[], void* const res)
 {
-	const char* const opts_str[] = {
-		DGT_O_DISPLAY_HELP_STR,
-		DGT_O_PRINT_STDIN_STR,
-		DGT_O_INPUT_STRING_STR,
-		DGT_O_QUIET_MODE_STR,
-		DGT_O_REVERSE_OUT_STR
-	};
-
 	digest_parse_t* const	parse = (digest_parse_t*)res;
 	err_t					st = SUCCESS;
 	u64						i_av = 0;
@@ -44,9 +36,10 @@ err_t	parse_digest_cli(const char** av[], void* const res)
 		}
 		if (found == false)
 		{
-			FERROR(EFMT_OPTNOTFOUND, (*av)[i_av]);
-			st = E_UNKOWNARGUMENT;
-			goto error;
+			// FERROR(EFMT_OPTNOTFOUND, (*av)[i_av]);
+			// st = E_UNKOWNARGUMENT;
+			// goto error;
+			break ;
 		}
 		i_av++;
 	}

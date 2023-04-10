@@ -10,6 +10,14 @@
 #define DGT_O_QUIET_MODE_STR "-q"
 #define DGT_O_REVERSE_OUT_STR "-r"
 
+static const char* const opts_str[] = {
+	DGT_O_DISPLAY_HELP_STR,
+	DGT_O_PRINT_STDIN_STR,
+	DGT_O_INPUT_STRING_STR,
+	DGT_O_QUIET_MODE_STR,
+	DGT_O_REVERSE_OUT_STR
+};
+
 typedef enum
 {
 	O_DISPLAY_HELP	= (1 << 0),
@@ -23,6 +31,8 @@ typedef struct
 {
 	opts_t			opts;
 	const char*		input_str;
+	const char*		curr_file;
+	u8*				input_stdin;
 } digest_parse_t;
 
 err_t	parse_digest_cli(const char** av[], void* const res);
