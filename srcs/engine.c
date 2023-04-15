@@ -11,7 +11,9 @@ err_t	select_command(const char** cmd_input_name[], command_t** dest)
 {
 	const char* const cmd_names[] = {
 		CMD_NAME_MD5,
+		CMD_NAME_SHA224,
 		CMD_NAME_SHA256,
+		CMD_NAME_SHA384,
 		CMD_NAME_SHA512
 	};
 
@@ -57,12 +59,13 @@ static err_t buff_join(u8** dest, u64 destlen, u8* other, u64 otherlen)
 	err_t st = E_SYSCALL;
 
 	u8* prev = *dest;
-	if ((st = buff_create(destlen + otherlen, dest)) == SUCCESS)
+	if ((st = buff_create(destlen + otherlen + 1, dest)) == SUCCESS)
 	{
 		if (destlen)
 			memcpy(*dest, prev, destlen);
 		memcpy(*dest + destlen, other, otherlen);
 	}
+	(*dest)[destlen + otherlen] = '\0';
 
 	free(prev);
 	return st;
@@ -70,48 +73,95 @@ static err_t buff_join(u8** dest, u64 destlen, u8* other, u64 otherlen)
 
 static err_t compute_from_fd(command_t* const cmd, int fd, void* const dest, result_t* const res, u8** bytes)
 {
-	err_t	st = SUCCESS;
-	ssize_t	nread;
-	u64		total_msg_len = 0;
-	u64		bytes_buff_count = 0;
+	#define BUFF_SIZE 0x1000
+
+	err_t		st = SUCCESS;
+	u64			total_msg_len = 0;
+	u64			bytes_buff_count = 0;
+	u8			buff1[BUFF_SIZE] = {0};
+	u8			buff2[BUFF_SIZE] = {0};
+	u8*			work_buff;
+	ssize_t		nread1;
+	ssize_t		nread2;
+	ssize_t*	work_nread;
+	ssize_t*	other_nread;
 
 	cmd->init(dest);
 
-	nread = read(fd, chunk_buffer, cmd->chunklen);
-	if (nread < 0)
+	nread1 = read(fd, buff1, ARRLEN(buff1));
+	if (nread1 < 0)
 	{
 		ERAISE_ERRNO("write");
 		st = E_SYSCALL;
 	}
-	///TODO: In this case hash an empty string
-	else if (nread == 0)
-		st = E_UNAVALAIBLE;
-	else
+
+	nread2 = read(fd, buff2, ARRLEN(buff2));
+	if (nread2 < 0)
 	{
+		ERAISE_ERRNO("write");
+		st = E_SYSCALL;
+	}
+
+	work_buff = buff1;
+	work_nread = &nread1;
+	other_nread = &nread2;
+
+	while (true)
+	{
+		if (bytes)
+		{
+			if ((st = buff_join(bytes, bytes_buff_count, work_buff, *work_nread)) != SUCCESS)
+				goto error;
+			bytes_buff_count += *work_nread;
+		}
+		u64 i = 0;
 		do
 		{
-			if (bytes)
+			if (*work_nread <= (ssize_t)cmd->chunklen && *other_nread == 0)
 			{
-				if ((st = buff_join(bytes, bytes_buff_count, chunk_buffer, cmd->chunklen)) != SUCCESS)
-					goto error;
-				bytes_buff_count += cmd->chunklen;
-			}
-
-			if (nread <= (ssize_t)cmd->chunklen)
-			{
-				total_msg_len += nread;
-				*res = cmd->final(dest, chunk_buffer, (u64)nread, total_msg_len);
+				total_msg_len += *work_nread;
+				*res = cmd->final(dest, &work_buff[i * cmd->chunklen], *work_nread, total_msg_len);
+				*work_nread = 0;
 			}
 			else
 			{
 				total_msg_len += cmd->chunklen;
-				cmd->update(dest, chunk_buffer);
+				cmd->update(dest, &work_buff[i * cmd->chunklen]);
+				*work_nread -= cmd->chunklen;
 			}
-		} while ((nread = read(fd, chunk_buffer, cmd->chunklen)) > 0);
-		if (nread < 0)
+			i++;
+		} while (*work_nread > 0);
+
+		if (*other_nread == 0)
+				break ;
+
+		if (work_buff == buff1)
 		{
-			ERAISE_ERRNO("write");
-			st = E_SYSCALL;
+			work_buff = buff2;
+			work_nread = &nread2;
+
+			nread1 = read(fd, buff1, ARRLEN(buff1));
+			if (nread1 < 0)
+			{
+				ERAISE_ERRNO("write");
+				st = E_SYSCALL;
+				goto error;
+			}
+			other_nread = &nread1;
+		}
+		else
+		{
+			work_buff = buff1;
+			work_nread = &nread1;
+
+			nread2 = read(fd, buff2, ARRLEN(buff2));
+			if (nread2 < 0)
+			{
+				ERAISE_ERRNO("write");
+				st = E_SYSCALL;
+				goto error;
+			}
+			other_nread = &nread2;
 		}
 	}
 

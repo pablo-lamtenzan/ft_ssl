@@ -6,27 +6,25 @@
 
 void	md5_init(void* const vctx)
 {
-	md5_ctx_t* ctx = (md5_ctx_t*)vctx;
-
-	*ctx = (md5_ctx_t){
-		.A = INIT_DATA_A,
-		.B = INIT_DATA_B,
-		.C = INIT_DATA_C,
-		.D = INIT_DATA_D
+	*(md5_ctx_t*)vctx = (md5_ctx_t){
+		.A = MD5_INIT_DATA_A,
+		.B = MD5_INIT_DATA_B,
+		.C = MD5_INIT_DATA_C,
+		.D = MD5_INIT_DATA_D
 	};
 }
 
 static u32 md5_f(u32 b, u32 c, u32 d)
-{ return F(b, c, d); }
+{ return MD5_F(b, c, d); }
 
 static u32 md5_g(u32 b, u32 c, u32 d)
-{ return G(b, c, d); }
+{ return MD5_G(b, c, d); }
 
 static u32 md5_h(u32 b, u32 c, u32 d)
-{ return H(b, c, d); }
+{ return MD5_H(b, c, d); }
 
 static u32 md5_i(u32 b, u32 c, u32 d)
-{ return I(b, c, d); }
+{ return MD5_I(b, c, d); }
 
 static u32 (*const md5_operations[])(u32, u32, u32) = {
 	&md5_f,
@@ -82,47 +80,15 @@ void	md5_update(void* const vctx, u8* const msg)
 
 result_t	md5_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 total_len)
 {
-	u8	byte_one;
-	u64	msg_len;
+	handle_padding_arg_t padding_arg = (handle_padding_arg_t){
+		.chunk_msg = chunk_msg,
+		.chunk_len = chunk_len,
+		.target_chunk_len = CHUNK_LEN_MD5,
+		.total_len = total_len,
+		.update = &md5_update,
+		.bswap = false
+	};
 
-#if BYTE_ORDER == LITTLE_ENDIAN
-	byte_one = BSWAP8((u8)1);
-	msg_len = total_len * 8;
-#elif BYTE_ORDER == BIG_ENDIAN
-	byte_one = 1;
-	///TODO: BSWAP 64
-	msg_len = BSWAP32((u32)total_len * 8);
-#else
-# error "What kind of system is this?"
-#endif
-
-	///TODO: Stress test this 
-
-	/* chunk[n-1] -> [msg] ; chunk[n] -> [1][0s][msg_len] */
-	if (chunk_len == CHUNK_LEN_MD5)
-	{
-		md5_update(vctx, chunk_msg);
-		memset(chunk_msg, 0, CHUNK_LEN_MD5 - sizeof(u64));
-		chunk_buffer[0] = byte_one;
-	}
-	/* chunk[n-1] -> [msg][1][0s] ; chunk[n] -> [0s][msg_len] */
-	else if (CHUNK_LEN_MD5 - chunk_len < sizeof(u64) + 1)
-	{
-		chunk_msg[chunk_len] = byte_one;
-		for (u64 i = chunk_len + 1 ; i < CHUNK_LEN_MD5 ; i++)
-			chunk_msg[i] = 0;
-		md5_update(vctx, chunk_msg);
-		memset(chunk_msg, 0, CHUNK_LEN_MD5 - sizeof(u64));
-	}
-	/* chunk[n] -> [msg][1][0s][msg_len] */
-	else
-	{
-		chunk_msg[chunk_len] = byte_one;
-		for (u64 i = chunk_len + 1 ; i < CHUNK_LEN_MD5 - sizeof(u64); i++)
-			chunk_msg[i] = 0;
-	}
-	*(u64*)&chunk_msg[CHUNK_LEN_MD5 - sizeof(u64)] = msg_len;
-	md5_update(vctx, chunk_msg);
-
-	return u32_to_str(vctx, 36, 4);
+	handle_padding(vctx, &padding_arg);
+	return u32_to_str(vctx, 36, sizeof(md5_ctx_t) / sizeof(u32), true);
 }

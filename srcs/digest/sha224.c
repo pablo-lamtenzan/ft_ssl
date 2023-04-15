@@ -1,23 +1,24 @@
 
+#include <crypt/ssl_sha224.h>
 #include <crypt/ssl_sha256.h>
 #include <crypt/ssl_utils.h>
 #include <ssl_engine.h>
 
-void	sha256_init(void* const vctx)
+void	sha224_init(void* const vctx)
 {
 	*(sha256_ctx_t*)vctx = (sha256_ctx_t){
-		.A = SHA256_INIT_DATA_A,
-		.B = SHA256_INIT_DATA_B,
-		.C = SHA256_INIT_DATA_C,
-		.D = SHA256_INIT_DATA_D,
-		.E = SHA256_INIT_DATA_E,
-		.F = SHA256_INIT_DATA_F,
-		.G = SHA256_INIT_DATA_G,
-		.H = SHA256_INIT_DATA_H
+		.A = SHA224_INIT_DATA_A,
+		.B = SHA224_INIT_DATA_B,
+		.C = SHA224_INIT_DATA_C,
+		.D = SHA224_INIT_DATA_D,
+		.E = SHA224_INIT_DATA_E,
+		.F = SHA224_INIT_DATA_F,
+		.G = SHA224_INIT_DATA_G,
+		.H = SHA224_INIT_DATA_H
 	};
 }
 
-void	sha256_update(void* const vctx, u8* const msg_u8)
+void	sha224_update(void* const vctx, u8* const msg_u8)
 {
 	sha256_ctx_t*	ctx = (sha256_ctx_t*)vctx;
 	sha256_ctx_t	start_ctx = *ctx;
@@ -60,17 +61,18 @@ void	sha256_update(void* const vctx, u8* const msg_u8)
 	ctx->H += start_ctx.H;
 }
 
-result_t	sha256_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 total_len)
+result_t	sha224_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 total_len)
 {
 	handle_padding_arg_t padding_arg = (handle_padding_arg_t){
 		.chunk_msg = chunk_msg,
 		.chunk_len = chunk_len,
-		.target_chunk_len = CHUNK_LEN_SHA256,
+		.target_chunk_len = CHUNK_LEN_SHA224,
 		.total_len = total_len,
-		.update = &sha256_update,
+		.update = &sha224_update,
 		.bswap = true
 	};
 
 	handle_padding(vctx, &padding_arg);
-	return u32_to_str(vctx, 72, sizeof(sha256_ctx_t) / sizeof(u32), false);
+	///TODO: Correct size
+	return u32_to_str(vctx, 72, (sizeof(sha256_ctx_t) / sizeof(u32)) - 1, false);
 }

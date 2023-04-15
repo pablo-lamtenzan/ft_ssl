@@ -45,7 +45,6 @@ err_t	digest_run(command_t* const cmd, const char** av[])
 		free(res);
 	}
 
-	///TODO: Leaks here
 	for (u64 i = 0 ; (*av)[i] != NULL ; i++)
 	{
 		parse.curr_file = (*av)[i];
