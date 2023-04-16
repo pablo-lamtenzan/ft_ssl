@@ -5,9 +5,9 @@ RM			=		/bin/rm
 
 include				srcs.mk
 
-CFLAGS		=		-Wall -Wextra -Werror -g3 -fsanitize=address
+CFLAGS		=		-Wall -Wextra -Werror #-g3 -fsanitize=address
 IFLAGS		=		-I$(INCDIR)
-SFLAGS		=		-lpthread -lpcap 
+SFLAGS		=		
 
 OBJS		=		$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
 
