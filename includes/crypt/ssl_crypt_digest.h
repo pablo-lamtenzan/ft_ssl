@@ -7,6 +7,14 @@ void		md5_init(void* const vctx);
 void		md5_update(void* const vctx, u8* const msg);
 result_t	md5_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 total_len);
 
+void		sha0_init(void* const vctx);
+void		sha0_update(void* const vctx, u8* const msg);
+result_t	sha0_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 total_len);
+
+void		sha1_init(void* const vctx);
+void		sha1_update(void* const vctx, u8* const msg);
+result_t	sha1_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 total_len);
+
 void		sha224_init(void* const vctx);
 void		sha224_update(void* const vctx, u8* const msg);
 result_t	sha224_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 total_len);

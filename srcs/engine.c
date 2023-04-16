@@ -1,38 +1,36 @@
 
 #include <ssl_engine.h>
 #include <ssl_utils.h>
+#include <ftlibc.h>
 
-#include <string.h> // TODO: remove
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
 
-err_t	select_command(const char** cmd_input_name[], command_t** dest)
+command_t* get_command(const char* cmd_name)
 {
-	const char* const cmd_names[] = {
-		CMD_NAME_MD5,
-		CMD_NAME_SHA224,
-		CMD_NAME_SHA256,
-		CMD_NAME_SHA384,
-		CMD_NAME_SHA512
-	};
+	command_t*	found = NULL;
 
-	err_t				st = SUCCESS;
-	command_t*			found = NULL;
-
-	for (u64 i = 0 ; i < ARRLEN(cmd_names) ; i++)
+	for (u64 i = 0 ; i < ARRLEN(commands) ; i++)
 	{
-		if (strcmp(**cmd_input_name, cmd_names[i]) == 0)
+		if (ft_strcmp(cmd_name, commands[i].name) == 0)
 		{
 			found = (command_t*)&commands[i];
 			break ;
 		}
 	}
 	if (found == NULL)
-	{
+		FERROR(EFMT_CMDNOTFOUND, cmd_name);
+	return found;
+}
+
+err_t	select_command(const char** cmd_input_name[], command_t** dest)
+{
+	err_t		st = SUCCESS;
+	command_t*	found = get_command(**cmd_input_name);
+
+	if (found == NULL)
 		st = E_UNKOWNARGUMENT;
-		FERROR(EFMT_CMDNOTFOUND, **cmd_input_name);
-	}
 	else
 	{
 		*dest = found;
@@ -54,6 +52,18 @@ static err_t buff_create(u64 capacity, u8** dest)
 	return st;
 }
 
+static void memcpy_strip_endl(u8* dest, u8* src, u64 n)
+{
+	u64 i = 0;
+
+	for (u64 y = 0 ; y < n ; y++)
+	{
+		if (src[y] != '\n')
+			dest[i++] = src[y];
+	}
+	dest[i] = '\0';
+}
+
 static err_t buff_join(u8** dest, u64 destlen, u8* other, u64 otherlen)
 {
 	err_t st = E_SYSCALL;
@@ -62,10 +72,9 @@ static err_t buff_join(u8** dest, u64 destlen, u8* other, u64 otherlen)
 	if ((st = buff_create(destlen + otherlen + 1, dest)) == SUCCESS)
 	{
 		if (destlen)
-			memcpy(*dest, prev, destlen);
-		memcpy(*dest + destlen, other, otherlen);
+			memcpy_strip_endl(*dest, prev, destlen);
+		memcpy_strip_endl(*dest + destlen, other, otherlen);
 	}
-	(*dest)[destlen + otherlen] = '\0';
 
 	free(prev);
 	return st;
@@ -180,11 +189,11 @@ void	compute_string(command_t* const cmd, void* const dest, const char* str, res
 	
 	u64	chunk_count = 0;
 	u64	total_msg_len = 0;
-	i64 string_len = (i64)strlen(str);
+	i64 string_len = (i64)ft_strlen(str);
 
 	while (string_len > 0)
 	{
-		memcpy((void*)chunk_buffer, (void*)&str[cmd->chunklen * chunk_count++], MIN((i64)cmd->chunklen, string_len));
+		ft_memcpy((void*)chunk_buffer, (void*)&str[cmd->chunklen * chunk_count++], MIN((i64)cmd->chunklen, string_len));
 		if (string_len <= (i64)cmd->chunklen)
 		{
 			total_msg_len += string_len;

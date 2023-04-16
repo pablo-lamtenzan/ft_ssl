@@ -1,8 +1,7 @@
 
 #include <ssl_engine.h>
 #include <ssl_utils.h>
-
-#include <string.h> // TODO remove
+#include <ftlibc.h>
 
 err_t	parse_digest_cli(const char** av[], void* const res)
 {
@@ -16,7 +15,7 @@ err_t	parse_digest_cli(const char** av[], void* const res)
 		found = false;
 		for (u64 i_opts = 0 ; i_opts < ARRLEN(opts_str) ; i_opts++)
 		{
-			if (strcmp((*av)[i_av], opts_str[i_opts]) == 0)
+			if (ft_strcmp((*av)[i_av], opts_str[i_opts]) == 0)
 			{
 				found = true;
 				parse->opts |= (1 << i_opts);
@@ -35,12 +34,7 @@ err_t	parse_digest_cli(const char** av[], void* const res)
 			}
 		}
 		if (found == false)
-		{
-			// FERROR(EFMT_OPTNOTFOUND, (*av)[i_av]);
-			// st = E_UNKOWNARGUMENT;
-			// goto error;
 			break ;
-		}
 		i_av++;
 	}
 	*av += i_av;

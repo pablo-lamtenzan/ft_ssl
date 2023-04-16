@@ -19,11 +19,14 @@ result_t		 u32_to_str(u32* vectors, u64 alloc_size, u64 size, bool bswap)
 	for (u64 i = 0 ; i < size ; i++)
 	{
 
-///TODO:
-//#if BYTE_ORDER == BIG_ENDIAN
+
+#if BYTE_ORDER == LITTLE_ENDIAN
 	if (bswap)
 		vectors[i] = BSWAP32(vectors[i]);
-//#endif
+#else
+	if (!bswap)
+		vector[i] = BSWAP32(vectors[i]);
+#endif
 
 		if ((tmp = ft_uitoa_base_len(vectors[i], 16, 'a', 8)) == NULL)
 		{
@@ -51,10 +54,13 @@ result_t		 u64_to_str(u64* vectors, u64 alloc_size, u64 size, bool bswap)
 	for (u64 i = 0 ; i < size ; i++)
 	{
 
-//#if BYTE_ORDER == BIG_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
 	if (bswap)
 		vectors[i] = BSWAP64(vectors[i]);
-//#endif
+#else
+	if (!bswap)
+		vectors[i] = BSWAP64(vectors[i]);
+#endif
 
 		if ((tmp = ft_uitoa_base_len(vectors[i], 16, 'a', 16)) == NULL)
 		{
@@ -98,13 +104,11 @@ void	handle_padding(void* const vctx, handle_padding_arg_t* const args)
 # error "What kind of system is this?"
 #endif
 
-	///TODO: Stress test this 
-
 	/* chunk[n-1] -> [msg] ; chunk[n] -> [1][0s][msg_len] */
 	if (args->chunk_len == args->target_chunk_len)
 	{
 		args->update(vctx, args->chunk_msg);
-		memset(args->chunk_msg, 0, args->target_chunk_len - sizeof(u64));
+		ft_memset((char*)args->chunk_msg, 0, args->target_chunk_len - sizeof(u64));
 		args->chunk_msg[0] = byte_one;
 	}
 	/* chunk[n-1] -> [msg][1][0s] ; chunk[n] -> [0s][msg_len] */
@@ -114,7 +118,7 @@ void	handle_padding(void* const vctx, handle_padding_arg_t* const args)
 		for (u64 i = args->chunk_len + 1 ; i < args->target_chunk_len ; i++)
 			args->chunk_msg[i] = 0;
 		args->update(vctx, args->chunk_msg);
-		memset(args->chunk_msg, 0, args->target_chunk_len - sizeof(u64));
+		ft_memset((char*)args->chunk_msg, 0, args->target_chunk_len - sizeof(u64));
 	}
 	/* chunk[n] -> [msg][1][0s][msg_len] */
 	else

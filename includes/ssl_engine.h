@@ -5,12 +5,16 @@
 #include "crypt/ssl_crypt_digest.h"
 
 #define CMD_NAME_MD5 "md5"
+#define CMD_NAME_SHA0 "sha0"
+#define CMD_NAME_SHA1 "sha1"
 #define CMD_NAME_SHA224 "sha224"
 #define CMD_NAME_SHA256 "sha256"
 #define CMD_NAME_SHA384 "sha384"
 #define CMD_NAME_SHA512 "sha512"
 
 #define CHUNK_LEN_MD5 64
+#define CHUNK_LEN_SHA0 64
+#define CHUNK_LEN_SHA1 64
 #define CHUNK_LEN_SHA224 64
 #define CHUNK_LEN_SHA256 64
 #define CHUNK_LEN_SHA384 128
@@ -41,12 +45,12 @@ void	digest_display(command_t* const cmd, result_t const hash, display_t source,
 
 typedef struct
 {
-	u8* const chunk_msg;
-	u64 chunk_len;
-	u64 target_chunk_len;
-	u64 total_len;
-	crypt_update_func_t update;
-	bool bswap;
+	u8*					const chunk_msg;
+	u64					chunk_len;
+	u64					target_chunk_len;
+	u64					total_len;
+	crypt_update_func_t	update;
+	bool				bswap;
 } handle_padding_arg_t;
 
 void	handle_padding(void* const vctx, handle_padding_arg_t* const args);
@@ -72,6 +76,26 @@ static const command_t commands[] = {
 		.init = &md5_init,
 		.update = &md5_update,
 		.final = &md5_final,
+		.display = &digest_display
+	},
+	{
+		.name = CMD_NAME_SHA0,
+		.chunklen = CHUNK_LEN_SHA0,
+		.run = &digest_run,
+		.parse = &parse_digest_cli,
+		.init = &sha0_init,
+		.update = &sha0_update,
+		.final = &sha0_final,
+		.display = &digest_display
+	},
+	{
+		.name = CMD_NAME_SHA1,
+		.chunklen = CHUNK_LEN_SHA1,
+		.run = &digest_run,
+		.parse = &parse_digest_cli,
+		.init = &sha1_init,
+		.update = &sha1_update,
+		.final = &sha1_final,
 		.display = &digest_display
 	},
 	{
@@ -118,8 +142,9 @@ static const command_t commands[] = {
 
 extern u8 chunk_buffer[CHUNK_LEN_MAX];
 
-err_t	select_command(const char** cmd_input_name[], command_t** const dest);
+command_t*	get_command(const char* cmd_name);
+err_t		select_command(const char** cmd_input_name[], command_t** const dest);
 
-err_t	compute_stdin(command_t* const cmd, void* const dest, result_t* const res, u8** bytes);
-void	compute_string(command_t* const cmd, void* const dest, const char* str, result_t* const res);
-err_t	compute_file(command_t* const cmd, const char* filename, void* const dest, result_t* const res);
+err_t		compute_stdin(command_t* const cmd, void* const dest, result_t* const res, u8** bytes);
+void		compute_string(command_t* const cmd, void* const dest, const char* str, result_t* const res);
+err_t		compute_file(command_t* const cmd, const char* filename, void* const dest, result_t* const res);

@@ -9,6 +9,7 @@
 #define MD5_INIT_DATA_D 0x10325476
 
 #define MD5_ITERATIONS 64
+#define MD5_HASHLEN 32
 
 #define MD5_OPSZ 16
 

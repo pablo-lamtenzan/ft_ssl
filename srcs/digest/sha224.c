@@ -73,6 +73,5 @@ result_t	sha224_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 
 	};
 
 	handle_padding(vctx, &padding_arg);
-	///TODO: Correct size
-	return u32_to_str(vctx, 72, (sizeof(sha256_ctx_t) / sizeof(u32)) - 1, false);
+	return u32_to_str(vctx, SHA256_HASHLEN - (sizeof(u32) * 2) + 1, (sizeof(sha256_ctx_t) / sizeof(u32)) - 1, false);
 }

@@ -64,7 +64,7 @@ void	md5_update(void* const vctx, u8* const msg)
 	{
 		operation_res = md5_operations[i / MD5_OPSZ](ctx->B, ctx->C, ctx->D);
 		chunk_index = md5_chunk_index_resolvers[i / MD5_OPSZ](i);
-		rotation_vector = operation_res + ctx->A + md5_sines[i] + ((u32*)(msg))[chunk_index];
+		rotation_vector = operation_res + ctx->A + md5_sines[i] + ((u32*)msg)[chunk_index];
 
 		ctx->A = ctx->D;
 		ctx->D = ctx->C;
@@ -90,5 +90,5 @@ result_t	md5_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 tot
 	};
 
 	handle_padding(vctx, &padding_arg);
-	return u32_to_str(vctx, 36, sizeof(md5_ctx_t) / sizeof(u32), true);
+	return u32_to_str(vctx, MD5_HASHLEN + 1, sizeof(md5_ctx_t) / sizeof(u32), true);
 }

@@ -73,6 +73,5 @@ result_t	sha384_final(void* const vctx, u8* const chunk_msg, u64 chunk_len, u64 
 	};
 
 	handle_padding(vctx, &padding_arg);
-	///TODO: Correct size
-	return u64_to_str(vctx, 144, (sizeof(sha512_ctx_t) / sizeof(u64)) - 2, false);
+	return u64_to_str(vctx, SHA512_HASHLEN - (sizeof(u64) * 2 * 2) + 1, (sizeof(sha512_ctx_t) / sizeof(u64)) - 2, false);
 }

@@ -9,4 +9,3 @@
 #define SHA224_INIT_DATA_F 0x68581511
 #define SHA224_INIT_DATA_G 0x64f98fa7
 #define SHA224_INIT_DATA_H 0xbefa4fa4
-

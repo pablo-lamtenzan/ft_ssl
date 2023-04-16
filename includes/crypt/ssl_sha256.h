@@ -13,6 +13,7 @@
 #define SHA256_INIT_DATA_H 0x5be0cd19
 
 #define SHA256_ITERATIONS 64
+#define SHA256_HASHLEN 64
 
 typedef struct
 {
@@ -26,7 +27,7 @@ typedef struct
 	u32 H;
 } __attribute__ ((packed, aligned(sizeof(u32)))) sha256_ctx_t;
 
-/* first 32 bits of the fractional part of the cube root of the 64 1st primes */
+/* First 32 bits of the fractional part of the cube root of the 64 1st primes */
 static const u32 sha256_factorials[] = {
 	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
 	0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,

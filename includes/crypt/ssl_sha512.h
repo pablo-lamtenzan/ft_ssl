@@ -13,6 +13,7 @@
 #define SHA512_INIT_DATA_H 0x5be0cd19137e2179
 
 #define SHA512_ITERATIONS 80
+#define SHA512_HASHLEN 128
 
 typedef struct
 {

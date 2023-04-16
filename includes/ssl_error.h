@@ -22,11 +22,12 @@ typedef enum
 #define PFX_ERROR __progname ": error: "
 #define PFX_WARNING __progname ": warning: "
 
-#define ERAISE_ERRNO(name) \
+#define ERAISE_ERRNO(name) ( \
 	FERROR( \
 		PFX_ERROR "%s: %s (errno: %d).\n", \
 		name, strerror(errno), errno \
-	)
+	) \
+)
 
 #define EFMT_CMDNOTFOUND PFX_ERROR "'%s' is an invalid command.\n"
 #define EFMT_OPTARGNULL PFX_ERROR "option '%s': missing arguments.\n"
