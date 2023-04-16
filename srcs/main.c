@@ -51,6 +51,11 @@ static err_t handle_stdin_cli(char*** data)
 	{
 		buff[nread - 1] = '\0';
 		*data = split_multicharset((char*)buff, " ");
+		if (*data == NULL)
+		{
+			ERAISE_ERRNO("malloc");
+			return E_SYSCALL;
+		}
 
 		if (ft_strcmp((*data)[0], CMD_HELP) == 0)
 		{
