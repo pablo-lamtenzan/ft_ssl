@@ -22,7 +22,7 @@ $(OBJDIR):
 	@mkdir -p $@
 	@echo MKDIR $@
 
-$(OBJDIR)/%.o : $(SRCDIR)/%.c
+$(OBJDIR)/%.o : $(SRCDIR)/%.c $(HDRS)
 	@mkdir -p $(shell dirname $@)
 	@$(CC) -c -o $@ $(CFLAGS) $(IFLAGS) $<
 	@echo CC $<
